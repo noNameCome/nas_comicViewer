@@ -1,6 +1,7 @@
 node_modules/
-만화책뷰어.apk
+*.apk
 지시메모.txt
+icon/
 
 android/local.properties
 android/keystore.properties
