@@ -1,0 +1,14 @@
+{
+  "appId": "com.hobbynas.mangaviewer",
+  "appName": "만화책뷰어",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

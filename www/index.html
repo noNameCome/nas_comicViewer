@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>만화책뷰어</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="lib-screen" class="screen active">
+  <div class="topbar"><h1>만화책뷰어</h1><button class="icon-btn ghost" id="clear-cache-btn" title="썸네일 캐시 삭제">🗑</button></div>
+  <div class="body">
+    <div id="lib-list" class="lib-list"></div>
+    <button id="add-lib-fab" class="fab">+</button>
+  </div>
+</div>
+
+<div id="form-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn ghost" id="form-cancel">‹</button>
+    <h1 id="form-title">경로 추가</h1>
+  </div>
+  <div class="body">
+    <div class="form-wrap">
+      <div class="field">
+        <label>목록명</label>
+        <input type="text" id="f-name" placeholder="예: 내 만화책">
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="f-https">
+        <span>HTTPS 사용 (체크 해제 시 HTTP)</span>
+      </div>
+      <div class="field">
+        <label>호스트</label>
+        <input type="text" id="f-host" placeholder="예: nas.example.com" autocapitalize="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>포트</label>
+          <input type="number" id="f-port" placeholder="80 / 443">
+        </div>
+        <div class="field">
+          <label>시작 경로</label>
+          <input type="text" id="f-path" placeholder="/hobby/폴더명" autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="field">
+        <label>아이디</label>
+        <input type="text" id="f-username" autocapitalize="off" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>비밀번호</label>
+        <input type="password" id="f-password">
+      </div>
+      <button class="btn" id="form-save">저장</button>
+      <button class="btn danger" id="form-delete" style="display:none">삭제</button>
+      <div class="hint">저장 시 자동으로 연결 테스트를 진행합니다.</div>
+    </div>
+  </div>
+</div>
+
+<div id="comics-screen" class="screen">
+  <div class="topbar">
+    <button class="icon-btn ghost" id="comics-back">‹</button>
+    <h1 id="comics-title">만화 목록</h1>
+    <button class="icon-btn ghost" id="comics-cols">▦</button>
+    <button class="icon-btn ghost" id="comics-sort">⇅</button>
+    <button class="icon-btn" id="comics-rescan">⟳</button>
+  </div>
+  <div class="tabbar" id="comics-tabbar">
+    <div class="tab-item active" data-tab="dir">디렉토리</div>
+    <div class="tab-item" data-tab="storage">스토리지</div>
+    <div class="tab-item" data-tab="history">히스토리</div>
+    <div class="tab-item" data-tab="fav">즐겨찾기</div>
+  </div>
+  <div class="search-row" id="comics-search-row">
+    <input type="text" id="comics-search" placeholder="파일명 검색" autocapitalize="off" autocorrect="off" spellcheck="false">
+  </div>
+  <div id="scan-progress" class="progress-wrap">
+    <div id="scan-progress-text">스캔 중...</div>
+    <div class="progress-bar"><div id="scan-progress-bar"></div></div>
+  </div>
+  <div class="body">
+    <div id="comics-grid" class="grid"></div>
+    <div id="tab-storage-list" class="lib-list" style="display:none"></div>
+  </div>
+</div>
+
+<div id="viewer-screen" class="screen">
+  <div class="viewer-stage" id="viewer-stage">
+    <div class="tap-zone left" id="viewer-tap-left"></div>
+    <div class="tap-zone right" id="viewer-tap-right"></div>
+    <img id="viewer-img" draggable="false">
+    <div class="viewer-loading" id="viewer-loading">불러오는 중...</div>
+    <div class="next-comic-overlay" id="viewer-next-overlay" style="display:none">
+      <div class="next-comic-card">
+        <button class="icon-btn ghost next-comic-x" id="viewer-next-close">✕</button>
+        <div class="next-comic-label" id="viewer-next-label"></div>
+        <div class="next-comic-name" id="viewer-next-name"></div>
+        <button class="btn" id="viewer-next-btn">다음 작품 보기 ›</button>
+      </div>
+    </div>
+  </div>
+  <div class="viewer-topbar" id="viewer-topbar">
+    <button class="icon-btn ghost" id="viewer-close">‹</button>
+    <div class="viewer-title" id="viewer-title"></div>
+    <button class="icon-btn ghost" id="viewer-rotate-l">⟲</button>
+    <button class="icon-btn ghost" id="viewer-rotate-r">⟳</button>
+    <button class="icon-btn ghost" id="viewer-orientation" title="화면 방향 고정">📱</button>
+  </div>
+  <div class="viewer-botbar" id="viewer-botbar">
+    <div class="page-row">
+      <input type="range" id="viewer-slider" min="0" max="0" value="0" step="1">
+    </div>
+    <div class="page-num" id="viewer-page-num">1 / 1</div>
+  </div>
+</div>
+
+<div id="sort-modal" class="modal-backdrop" style="display:none">
+  <div class="modal-sheet">
+    <h3>정렬 기준</h3>
+    <div class="sort-option" data-sort="name_asc">파일명</div>
+    <div class="sort-option" data-sort="name_desc">파일명 (내림차순)</div>
+    <div class="sort-option" data-sort="date_asc">날짜</div>
+    <div class="sort-option" data-sort="date_desc">날짜 (내림차순)</div>
+    <div class="sort-option" data-sort="size_asc">파일크기</div>
+    <div class="sort-option" data-sort="size_desc">파일크기 (내림차순)</div>
+  </div>
+</div>
+
+<div id="cols-modal" class="modal-backdrop" style="display:none">
+  <div class="modal-sheet">
+    <h3>한 줄에 보일 개수</h3>
+    <div class="cols-option" data-cols="2">2개</div>
+    <div class="cols-option" data-cols="4">4개</div>
+    <div class="cols-option" data-cols="6">6개</div>
+    <div class="cols-option" data-cols="8">8개</div>
+    <div class="cols-option" data-cols="10">10개</div>
+  </div>
+</div>
+
+<div id="resume-modal" class="modal-backdrop" style="display:none">
+  <div class="modal-sheet">
+    <h3 id="resume-text"></h3>
+    <div class="resume-btn-row">
+      <button class="btn" id="resume-continue">이어보기</button>
+      <button class="btn secondary" id="resume-restart">처음부터</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" style="display:none"></div>
+
+<script src="lib/zip.min.js"></script>
+<script src="js/webdav.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ziptools.js"></script>
+<script src="js/thumb.js"></script>
+<script src="js/scan.js"></script>
+<script src="js/listview.js"></script>
+<script src="js/viewer.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
